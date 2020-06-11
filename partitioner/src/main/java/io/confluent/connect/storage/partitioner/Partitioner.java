@@ -21,8 +21,8 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Partition incoming records, and generates directories and file names in which to store the
- * incoming records.
+ * Partition incoming records, and generates directories and file names in which
+ * to store the incoming records.
  *
  * @param <T> The type representing the field schemas.
  */
@@ -30,20 +30,24 @@ public interface Partitioner<T> {
   void configure(Map<String, Object> config);
 
   /**
-   * Returns string representing the output path for a sinkRecord to be encoded and stored.
+   * Returns string representing the output path for a sinkRecord to be encoded
+   * and stored.
    *
    * @param sinkRecord The record to be stored by the Sink Connector
-   * @return The path/filename the SinkRecord will be stored into after it is encoded
+   * @return The path/filename the SinkRecord will be stored into after it is
+   *         encoded
    */
   String encodePartition(SinkRecord sinkRecord);
 
   /**
-   * Returns string representing the output path for a sinkRecord to be encoded and stored.
+   * Returns string representing the output path for a sinkRecord to be encoded
+   * and stored.
    *
-   * @param sinkRecord The record to be stored by the Sink Connector
-   * @param nowInMillis The current time in ms. Some Partitioners will use this option, but by
-   *                    default it is unused.
-   * @return The path/filename the SinkRecord will be stored into after it is encoded
+   * @param sinkRecord  The record to be stored by the Sink Connector
+   * @param nowInMillis The current time in ms. Some Partitioners will use this
+   *                    option, but by default it is unused.
+   * @return The path/filename the SinkRecord will be stored into after it is
+   *         encoded
    */
   default String encodePartition(SinkRecord sinkRecord, long nowInMillis) {
     return encodePartition(sinkRecord);
@@ -52,4 +56,19 @@ public interface Partitioner<T> {
   String generatePartitionedPath(String topic, String encodedPartition);
 
   List<T> partitionFields();
+
+  /**
+   * Method that allows custom partitioners to determine when we should rotate
+   * partitions
+   * 
+   * @param encodedPartition        The path/filename the SinkRecord will be
+   *                                stored into after it is encoded
+   * @param currentEncodedPartition The path/filename that was used for the
+   *                                previous SinkRecord
+   * @return true if the partition should be rotated. false otherwise.
+   */
+  default boolean shouldRotatePartition(String encodedPartition, String currentEncodedPartition) {
+    return !encodedPartition.equals(currentEncodedPartition);
+  }
+
 }
